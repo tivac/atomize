@@ -1,0 +1,11 @@
+.color-red {color: red;
+}
+
+.one {
+    composes: color-red;
+}
+
+.two {
+    composes: color-red;
+    margin-top: 10px;
+}
