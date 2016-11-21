@@ -1,0 +1,17 @@
+.one {
+    top: 10%;
+}
+
+.two {
+    top: 10%;
+    border: 1px solid #CCC;
+}
+
+.three {
+    border: 1px solid #CCC;
+    -moz-hyphens: auto;
+}
+
+.four {
+    -moz-hyphens: auto;
+}

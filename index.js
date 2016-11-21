@@ -1,9 +1,27 @@
 "use strict";
 
-var postcss = require("postcss"),
-    escape  = require("cssesc"),
+var postcss = require("postcss");
+
+function escape(ident) {
+    return ident.toLowerCase()
+        .replace(/[^a-z0-9_\-]/gi, "")
+        .replace(/^(\d)|^(\-\d)/i, "a$1");
+}
+
+function hasParent(filter, node) {
+    var curr = node,
+        found;
     
-    each = require("lodash.foreach");
+    while(curr.parent && !found) {
+        if(curr.name === filter) {
+            found = true;
+        }
+
+        curr = curr.parent;
+    }
+
+    return found;
+}
 
 module.exports = postcss.plugin("postcss-atomize", () =>
     (css) => {
@@ -11,12 +29,13 @@ module.exports = postcss.plugin("postcss-atomize", () =>
 
         css.walkDecls((decl) => {
             var key;
-            
-            if(decl.prop === "composes") {
+
+            // Ignore existing composition and don't transform rules within keyframes
+            if(decl.prop === "composes" || hasParent("keyframes", decl)) {
                 return;
             }
             
-            key = escape(`${decl.prop}-${decl.value}`, { isIdentifier : true });
+            key = escape(`${decl.prop}-${decl.value}`);
 
             if(!decls[key]) {
                 decls[key] = [];
@@ -25,28 +44,37 @@ module.exports = postcss.plugin("postcss-atomize", () =>
             decls[key].push(decl);
         });
 
-        each(decls, (nodes, key) => {
+        Object.keys(decls).forEach((key) => {
+            var nodes = decls[key],
+                parent, rule;
+            
+            // TODO: configurable?
             if(nodes.length < 2) {
                 return;
             }
 
-            // Insert new rule
-            css.prepend(postcss.rule({
+            // Store parent ref of the first decl
+            parent = nodes[0].parent;
+
+            // Create new rule
+            rule = parent.clone({
                 selector : `.${key}`,
-                nodes    : [
-                    nodes[0].clone()
-                ],
+                nodes    : [],
 
-                // Use the first node that caused this rule to be created as the source
-                source : nodes[0].source
-            }));
+                // TODO: why isn't this the default?
+                raws : Object.assign(
+                    Object.create(null),
+                    parent.raws
+                )
+            });
 
-            // Remove all instances of the declaration, add a composes rule to their parent
+            // Inject rule into the stylesheet
+            css.insertBefore(parent, rule);
+
+            // Remove all declarations, add a composes rule to their parent
             nodes.forEach((decl) => {
-                var parent = decl.parent;
-                
-                parent.insertBefore(
-                    parent.nodes.find((node) => node.prop !== "composes"),
+                decl.parent.insertBefore(
+                    decl.parent.nodes.find((node) => node.prop !== "composes"),
                     decl.clone({
                         prop  : "composes",
                         value : key
@@ -55,6 +83,9 @@ module.exports = postcss.plugin("postcss-atomize", () =>
 
                 decl.remove();
             });
+
+            // move first decl into just-created rule
+            nodes[0].moveTo(rule);
         });
     }
 );

@@ -1,0 +1,29 @@
+.top-10 {
+    top: 10%;
+}
+
+.one {
+    composes: top-10;
+}
+
+.border-1pxsolidccc {
+    border: 1px solid #CCC;
+}
+
+.two {
+    composes: top-10;
+    composes: border-1pxsolidccc;
+}
+
+.-moz-hyphens-auto {
+    -moz-hyphens: auto;
+}
+
+.three {
+    composes: border-1pxsolidccc;
+    composes: -moz-hyphens-auto;
+}
+
+.four {
+    composes: -moz-hyphens-auto;
+}

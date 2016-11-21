@@ -1,0 +1,20 @@
+@keyframes test {
+    0% {
+        left: 0%;
+        width: 0%
+    }
+    50% {
+        left: 25%;
+        width: 75%
+    }
+    75% {
+        left: 100%;
+        width: 0%
+    }
+}
+
+.one {
+    position: absolute;
+
+    left: 0%;
+}

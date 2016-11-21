@@ -1,0 +1,9 @@
+@import "/some/other/file.css";
+
+.one {
+    color: red;
+}
+
+.two {
+    color: red;
+}
