@@ -60,12 +60,9 @@ module.exports = postcss.plugin("postcss-atomize", () =>
             rule = parent.clone({
                 selector : `.${key}`,
                 nodes    : [],
-
-                // TODO: why isn't this the default?
-                raws : Object.assign(
-                    Object.create(null),
-                    parent.raws
-                )
+                raws     : {
+                    between : parent.raws.between
+                }
             });
 
             // Inject rule into the stylesheet
