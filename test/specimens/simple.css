@@ -3,6 +3,19 @@
 }
 
 .two {
+    margin-top: 10px;
     color: red;
+}
+
+.three {
+    color: blue;
+
+    margin-top: 10px;
+}
+
+.four {
+    composes: three;
+
+    color: white;
     margin-top: 10px;
 }

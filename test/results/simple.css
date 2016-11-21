@@ -1,3 +1,6 @@
+.margin-top-10px {margin-top: 10px;
+}
+
 .color-red {color: red;
 }
 
@@ -6,6 +9,19 @@
 }
 
 .two {
+    composes: margin-top-10px;
     composes: color-red;
-    margin-top: 10px;
+}
+
+.three {
+    composes: margin-top-10px;
+    color: blue;
+}
+
+.four {
+    composes: three;
+
+    composes: margin-top-10px;
+
+    color: white;
 }

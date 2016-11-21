@@ -32,8 +32,26 @@ module.exports = postcss.plugin("postcss-atomize", () =>
                 ]
             }));
 
-            // Replace all instances of the declaration w/ a composes to the rule
-            nodes.forEach((decl) => decl.replaceWith(postcss.decl({ prop : "composes", value : key })));
+            // Remove all instances of the declaration, add a composes rule to their parent
+            nodes.forEach((decl) => {
+                var parent = decl.parent,
+                    prev;
+
+                decl.remove();
+
+                parent.nodes.some((node) => {
+                    if(node.prop !== "composes") {
+                        prev = node;
+                    }
+
+                    return prev;
+                });
+
+                parent.insertBefore(prev, postcss.decl({
+                    prop  : "composes",
+                    value : key
+                }));
+            });
         });
     }
 );
