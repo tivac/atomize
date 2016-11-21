@@ -1,0 +1,32 @@
+{
+  "name": "postcss-atomize",
+  "version": "0.0.1",
+  "description": "Break selectors down into their smallest components and re-form using composition",
+  "main": "index.js",
+  "scripts": {
+    "cover": "jest --coverage",
+    "lint": "eslint .",
+    "test": "npm run lint && npm run tests",
+    "tests": "jest"
+  },
+  "keywords": [
+    "postcss",
+    "plugin",
+    "optimization"
+  ],
+  "author": "Pat Cavit <npm@patcavit.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^3.10.2",
+    "eslint-config-arenanet": "^3.0.1",
+    "jest": "^17.0.3",
+    "postcss": "^5.2.5"
+  },
+  "eslintConfig": {
+    "extends": "arenanet",
+    "env": {
+      "node": true,
+      "mocha": true
+    }
+  }
+}
