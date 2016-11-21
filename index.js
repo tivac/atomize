@@ -6,9 +6,9 @@ var postcss = require("postcss"),
     each = require("lodash.foreach");
 
 module.exports = postcss.plugin("postcss-atomize", () =>
-    (css, result) => {
+    (css) => {
         var decls = Object.create(null);
-        
+
         css.walkDecls((decl) => {
             var key;
             
@@ -35,7 +35,10 @@ module.exports = postcss.plugin("postcss-atomize", () =>
                 selector : `.${key}`,
                 nodes    : [
                     nodes[0].clone()
-                ]
+                ],
+
+                // Use the first node that caused this rule to be created as the source
+                source : nodes[0].source
             }));
 
             // Remove all instances of the declaration, add a composes rule to their parent
