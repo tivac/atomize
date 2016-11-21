@@ -6,6 +6,13 @@
 }
 
 .two {
+    background: blue;
+}
+
+.three {
+    composes: two;
+
     composes: color-red;
+
     margin-top: 10px;
 }

@@ -1,0 +1,16 @@
+.margin-top-10px {margin-top: 10px;
+}
+
+.color-blue {color: blue;
+}
+
+.one {
+    composes: color-blue;
+    composes: margin-top-10px;
+}
+
+.two {
+    composes: color-blue;
+    composes: margin-top-10px;
+    margin: 10px;
+}

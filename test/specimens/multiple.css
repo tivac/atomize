@@ -1,0 +1,10 @@
+.one {
+    color: blue;
+    margin-top: 10px;
+}
+
+.two {
+    color: blue;
+    margin: 10px;
+    margin-top: 10px;
+}

@@ -10,7 +10,13 @@ module.exports = postcss.plugin("postcss-atomize", () =>
         var decls = Object.create(null);
         
         css.walkDecls((decl) => {
-            var key = escape(`${decl.prop}-${decl.value}`, { isIdentifier : true });
+            var key;
+            
+            if(decl.prop === "composes") {
+                return;
+            }
+            
+            key = escape(`${decl.prop}-${decl.value}`, { isIdentifier : true });
 
             if(!decls[key]) {
                 decls[key] = [];
@@ -34,23 +40,17 @@ module.exports = postcss.plugin("postcss-atomize", () =>
 
             // Remove all instances of the declaration, add a composes rule to their parent
             nodes.forEach((decl) => {
-                var parent = decl.parent,
-                    prev;
+                var parent = decl.parent;
+                
+                parent.insertBefore(
+                    parent.nodes.find((node) => node.prop !== "composes"),
+                    decl.clone({
+                        prop  : "composes",
+                        value : key
+                    })
+                );
 
                 decl.remove();
-
-                parent.nodes.some((node) => {
-                    if(node.prop !== "composes") {
-                        prev = node;
-                    }
-
-                    return prev;
-                });
-
-                parent.insertBefore(prev, postcss.decl({
-                    prop  : "composes",
-                    value : key
-                }));
             });
         });
     }
