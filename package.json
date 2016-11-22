@@ -23,7 +23,8 @@
   "devDependencies": {
     "eslint": "^3.10.2",
     "eslint-config-arenanet": "^3.0.1",
-    "jest": "^17.0.3"
+    "jest": "^17.0.3",
+    "modular-css": "^0.29.1"
   },
   "eslintConfig": {
     "extends": "arenanet",

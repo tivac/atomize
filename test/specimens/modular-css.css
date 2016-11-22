@@ -1,0 +1,15 @@
+.one {
+    color: red;
+}
+
+.two {
+    composes: one from "./simple.css";
+
+    background: blue;
+}
+
+.three {
+    composes: one from "./charset.css";
+
+    background: blue;
+}

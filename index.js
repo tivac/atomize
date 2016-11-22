@@ -1,6 +1,7 @@
 "use strict";
 
 var postcss = require("postcss"),
+
     map     = require("./lib/map.js");
 
 module.exports = postcss.plugin("postcss-atomize", () =>
