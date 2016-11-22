@@ -1,7 +1,6 @@
 "use strict";
 
-var fs     = require("fs"),
-    assert = require("assert"),
+var fs = require("fs"),
     
     plugin = require("../index.js");
 
@@ -13,9 +12,7 @@ function process(file) {
 
 describe("postcss-atomize", () => {
     describe("basics", () => {
-        it("should be a postcss plugin", () => {
-            assert.equal(typeof plugin, "function");
-        });
+        it("should be a postcss plugin", () => expect(typeof plugin).toEqual("function"));
 
         it("should extract repeated decls", process("simple.css"));
         it("should extract multiple repeated decls in a rule", process("multiple.css"));

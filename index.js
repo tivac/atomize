@@ -1,48 +1,11 @@
 "use strict";
 
-var postcss = require("postcss");
-
-function escape(ident) {
-    return ident.toLowerCase()
-        .replace(/[^a-z0-9_\-]/gi, "")
-        .replace(/^(\d)|^(\-\d)/i, "a$1");
-}
-
-function hasParent(filter, node) {
-    var curr = node,
-        found;
-    
-    while(curr.parent && !found) {
-        if(curr.name === filter) {
-            found = true;
-        }
-
-        curr = curr.parent;
-    }
-
-    return found;
-}
+var postcss = require("postcss"),
+    map     = require("./lib/map.js");
 
 module.exports = postcss.plugin("postcss-atomize", () =>
     (css) => {
-        var decls = Object.create(null);
-
-        css.walkDecls((decl) => {
-            var key;
-
-            // Ignore existing composition and don't transform rules within keyframes
-            if(decl.prop === "composes" || hasParent("keyframes", decl)) {
-                return;
-            }
-            
-            key = escape(`${decl.prop}-${decl.value}`);
-
-            if(!decls[key]) {
-                decls[key] = [];
-            }
-
-            decls[key].push(decl);
-        });
+        var decls = map(css);
 
         Object.keys(decls).forEach((key) => {
             var nodes = decls[key],
