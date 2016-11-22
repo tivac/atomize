@@ -6,7 +6,7 @@ var fs = require("fs"),
 
 function process(file) {
     return () => plugin.process(fs.readFileSync(`./test/specimens/${file}`)).then((result) =>
-        expect(result.css).toEqual(fs.readFileSync(`./test/results/${file}`, "utf8"))
+        expect(result.css).toBe(fs.readFileSync(`./test/results/${file}`, "utf8"))
     );
 }
 
