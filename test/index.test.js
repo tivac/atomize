@@ -2,10 +2,12 @@
 
 var fs = require("fs"),
     
-    plugin = require("../index.js");
+    plugin = require("../index.js"),
+    
+    processor = require("postcss")([ plugin ]);
 
 function process(file) {
-    return () => plugin.process(fs.readFileSync(`./test/specimens/${file}`)).then((result) =>
+    return () => processor.process(fs.readFileSync(`./test/specimens/${file}`)).then((result) =>
         expect(result.css).toBe(fs.readFileSync(`./test/results/${file}`, "utf8"))
     );
 }
