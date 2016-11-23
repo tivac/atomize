@@ -1,81 +1,85 @@
 "use strict";
 
-var postcss = require("postcss"),
-    map     = require("./lib/map.js");
+var parser = require("postcss-selector-parser"),
+    map    = require("./lib/map.js");
 
-module.exports = postcss.plugin("postcss-atomize", () =>
-    (css, result) => {
-        var decls     = map(css),
-            selectors = Object.create(null);
+module.exports = (css, result) => {
+    var decls     = map(css),
+        selectors = Object.create(null);
+    
+    // Build selector to file/export mapping
+    Object.keys(result.opts.files).forEach((file) =>
+        Object.keys(result.opts.files[file].exports).forEach((original) => {
+            var exported = result.opts.files[file].exports[original];
+
+            selectors[exported[exported.length - 1]] = exported;
+        })
+    );
+
+    Object.keys(decls).forEach((key) => {
+        var nodes = decls[key],
+            parent, atom;
         
-        // Build selector to file/export mapping
-        Object.keys(result.opts.files).forEach((file) => {
-            Object.keys(result.opts.files[file].exports).forEach((original) => {
-                var exported = result.opts.files[file].exports[original];
+        // TODO: configurable?
+        if(nodes.length < 2) {
+            return;
+        }
 
-                selectors[exported[exported.length - 1]] = {
-                    file : file,
-                    key  : original
-                };
-            });
+        // Store parent ref of the first decl
+        parent = nodes[0].parent;
+
+        // Create new rule
+        atom = parent.clone({
+            selector : `.${key}`,
+            nodes    : [],
+            raws     : {
+                between : parent.raws.between
+            }
         });
 
-        Object.keys(decls).forEach((key) => {
-            var nodes = decls[key],
-                parent, rule;
+        // Inject rule into the stylesheet
+        css.insertBefore(parent, atom);
+
+        // Remove all declarations, inject into composition chain
+        nodes.forEach((decl) => {
+            var keys   = [],
+                rule = decl.parent;
             
-            // TODO: configurable?
-            if(nodes.length < 2) {
-                return;
-            }
+            // Fill keys object w/ the values that need their compositions updated
+            parser((contents) => {
+                contents.walkClasses((node) => keys.push(node.value));
+                contents.walkIds((node) => keys.push(node.value));
+            }).process(rule.selector);
+            
+            decl.remove();
 
-            // Store parent ref of the first decl
-            parent = nodes[0].parent;
-
-            // Create new rule
-            rule = parent.clone({
-                selector : `.${key}`,
-                nodes    : [],
-                raws     : {
-                    between : parent.raws.between
-                }
-            });
-
-            // Inject rule into the stylesheet
-            css.insertBefore(parent, rule);
-
-            // Remove all declarations, inject into composition chain
-            nodes.forEach((decl) => {
-                // TODO: slicing off the first character is really dumb
-                var current = decl.parent.selector.slice(1),
-                    details = selectors[current],
-                    exports, pos;
-
-                if(!details) {
-                    console.log(decl.parent.selector, current);
-
+            keys.forEach((selector) => {
+                var exports = selectors[selector],
+                    pos;
+                
+                // Not a known selector, so ignore it
+                if(!exports) {
                     return;
                 }
-
-                exports = result.opts.files[details.file].exports[details.key];
-                pos     = exports.indexOf(current);
                 
-                parent = decl.parent;
-
+                // splice newly-created rule into composition chain
+                pos = exports.indexOf(selector);
                 exports.splice(pos === -1 ? Infinity : pos, 0, key);
 
-                decl.remove();
-
-                if(parent.nodes.length) {
+                if(rule.nodes.length) {
                     return;
                 }
 
-                parent.remove();
+                // Clean up now-empty rules
+                rule.remove();
+                
                 exports.splice(exports.length - 1, 1);
             });
-
-            // move first decl into just-created rule
-            nodes[0].moveTo(rule);
         });
-    }
-);
+
+        // move first decl into just-created rule
+        nodes[0].moveTo(atom);
+    });
+};
+
+module.exports.postcssPlugin = "postcss-atomize";
