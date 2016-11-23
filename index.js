@@ -1,88 +1,50 @@
 "use strict";
 
-var postcss = require("postcss");
+var map = require("./lib/map.js");
 
-function escape(ident) {
-    return ident.toLowerCase()
-        .replace(/[^a-z0-9_\-]/gi, "")
-        .replace(/^(\d)|^(\-\d)/i, "a$1");
-}
+module.exports = (css) => {
+    var decls = map(css);
 
-function hasParent(filter, node) {
-    var curr = node,
-        found;
-    
-    while(curr.parent && !found) {
-        if(curr.name === filter) {
-            found = true;
+    Object.keys(decls).forEach((key) => {
+        var nodes = decls[key],
+            parent, rule;
+        
+        // TODO: configurable?
+        if(nodes.length < 2) {
+            return;
         }
 
-        curr = curr.parent;
-    }
+        // Store parent ref of the first decl
+        parent = nodes[0].parent;
 
-    return found;
-}
-
-module.exports = postcss.plugin("postcss-atomize", () =>
-    (css) => {
-        var decls = Object.create(null);
-
-        css.walkDecls((decl) => {
-            var key;
-
-            // Ignore existing composition and don't transform rules within keyframes
-            if(decl.prop === "composes" || hasParent("keyframes", decl)) {
-                return;
+        // Create new rule
+        rule = parent.clone({
+            selector : `.${key}`,
+            nodes    : [],
+            raws     : {
+                between : parent.raws.between
             }
-            
-            key = escape(`${decl.prop}-${decl.value}`);
-
-            if(!decls[key]) {
-                decls[key] = [];
-            }
-
-            decls[key].push(decl);
         });
 
-        Object.keys(decls).forEach((key) => {
-            var nodes = decls[key],
-                parent, rule;
-            
-            // TODO: configurable?
-            if(nodes.length < 2) {
-                return;
-            }
+        // Inject rule into the stylesheet
+        css.insertBefore(parent, rule);
 
-            // Store parent ref of the first decl
-            parent = nodes[0].parent;
+        // Remove all declarations, add a composes rule to their parent
+        nodes.forEach((decl) => {
+            decl.parent.insertBefore(
+                decl.parent.nodes.find((node) => node.prop !== "composes"),
+                decl.clone({
+                    prop  : "composes",
+                    value : key
+                })
+            );
 
-            // Create new rule
-            rule = parent.clone({
-                selector : `.${key}`,
-                nodes    : [],
-                raws     : {
-                    between : parent.raws.between
-                }
-            });
-
-            // Inject rule into the stylesheet
-            css.insertBefore(parent, rule);
-
-            // Remove all declarations, add a composes rule to their parent
-            nodes.forEach((decl) => {
-                decl.parent.insertBefore(
-                    decl.parent.nodes.find((node) => node.prop !== "composes"),
-                    decl.clone({
-                        prop  : "composes",
-                        value : key
-                    })
-                );
-
-                decl.remove();
-            });
-
-            // move first decl into just-created rule
-            nodes[0].moveTo(rule);
+            decl.remove();
         });
-    }
-);
+
+        // move first decl into just-created rule
+        nodes[0].moveTo(rule);
+    });
+};
+
+module.exports.postcssPlugin = require("./package.json").name;

@@ -1,0 +1,13 @@
+/* test/specimens/charset.css */
+@charset "UTF-8";
+.color-red {
+    color: red
+}
+/* test/specimens/simple.css */
+.mc08e91a5b_two {
+    margin-top: 10px
+}
+/* test/specimens/modular-css.css */
+.background-blue {
+    background: blue
+}

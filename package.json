@@ -18,12 +18,14 @@
   "author": "Pat Cavit <npm@patcavit.com>",
   "license": "MIT",
   "dependencies": {
-    "postcss": "^5.2.5"
+    "postcss-selector-parser": "^2.2.2"
   },
   "devDependencies": {
     "eslint": "^3.10.2",
     "eslint-config-arenanet": "^3.0.1",
-    "jest": "^17.0.3"
+    "jest": "^17.0.3",
+    "modular-css": "^0.29.1",
+    "postcss": "^5.2.5"
   },
   "eslintConfig": {
     "extends": "arenanet",
